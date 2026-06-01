@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>🧅 Onion Storage AI | Smart Monitoring Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #00d9ff;
+            --secondary: #ff006e;
+            --accent: #8338ec;
+            --dark-bg: #0a0e27;
+            --card-bg: rgba(20, 33, 61, 0.8);
+            --text-primary: #ffffff;
+            --text-secondary: #b0b9d4;
+            --success: #00d9a3;
+            --warning: #ffa502;
+            --danger: #ff006e;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #16213e 50%, #0f3460 100%);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            display: flex;
+        }
+
+        /* GLASSMORPHISM SIDEBAR */
+        .sidebar {
+            width: 280px;
+            background: rgba(10, 14, 39, 0.95);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(0, 217, 255, 0.1);
+            padding: 40px 25px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+
+        .nav-item {
+            padding: 14px 16px;
+            background: rgba(0, 217, 255, 0.05);
+            border: 1px solid rgba(0, 217, 255, 0.1);
+            border-radius: 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background: var(--primary);
+            transform: scaleY(0);
+            transform-origin: top;
+            transition: transform 0.3s;
+        }
+
+        .nav-item:hover {
+            background: rgba(0, 217, 255, 0.1);
+            color: var(--primary);
+            border-color: rgba(0, 217, 255, 0.3);
+        }
+
+        .nav-item:hover::before {
+            transform: scaleY(1);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.15), rgba(131, 56, 236, 0.15));
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        /* MAIN CONTENT */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 35px 40px;
+            background: linear-gradient(180deg, rgba(0, 217, 255, 0.05) 0%, rgba(131, 56, 236, 0.02) 100%);
+            border-bottom: 1px solid rgba(0, 217, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .header-left h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .header-left p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+
+        .clock {
+            font-family: 'Space Mono', monospace;
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* CONTENT AREA */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            transition: opacity 0.3s ease;
+        }
+
+        .content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .content::-webkit-scrollbar-thumb {
+            background: rgba(0, 217, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        .content::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 217, 255, 0.4);
+        }
+
+        /* CARDS GRID */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, var(--card-bg), rgba(131, 56, 236, 0.1));
+            border: 1px solid rgba(0, 217, 255, 0.15);
+            border-radius: 20px;
+            padding: 25px;
+            backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 217, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary);
+            box-shadow: 0 20px 50px rgba(0, 217, 255, 0.15);
+        }
+
+        .metric-card:hover::before {
+            left: 100%;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .metric-value {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .metric-bar {
+            height: 4px;
+            background: rgba(0, 217, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .metric-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 15px var(--primary);
+        }
+
+        .metric-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.safe {
+            background: var(--success);
+            box-shadow: 0 0 10px var(--success);
+        }
+
+        .status-dot.warning {
+            background: var(--warning);
+            box-shadow: 0 0 10px var(--warning);
+            animation: pulse-warning 0.8s infinite;
+        }
+
+        .status-dot.danger {
+            background: var(--danger);
+            box-shadow: 0 0 10px var(--danger);
+            animation: pulse-danger 0.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @keyframes pulse-warning {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        @keyframes pulse-danger {
+            0%, 100% { opacity: 1; box-shadow: 0 0 10px var(--danger); }
+            50% { opacity: 0.5; box-shadow: 0 0 20px var(--danger); }
+        }
+
+        /* PREMIUM ROW */
+        .premium-row {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 25px;
+        }
+
+        .premium-card {
+            background: linear-gradient(135deg, var(--card-bg), rgba(131, 56, 236, 0.1));
+            border: 1px solid rgba(0, 217, 255, 0.15);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(20px);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 280px;
+        }
+
+        .status-box {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .status-item {
+            padding: 18px;
+            background: rgba(0, 217, 255, 0.05);
+            border-left: 3px solid var(--primary);
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .status-item:hover {
+            background: rgba(0, 217, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .status-item-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+
+        .status-item-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        /* ALERTS */
+        .alert-banner {
+            background: linear-gradient(135deg, rgba(255, 0, 110, 0.1), rgba(131, 56, 236, 0.1));
+            border: 1px solid var(--danger);
+            border-radius: 15px;
+            padding: 18px 24px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            animation: slideIn 0.5s ease;
+        }
+
+        .alert-icon {
+            font-size: 24px;
+            animation: shake 0.5s;
+        }
+
+        .alert-content h3 {
+            font-size: 14px;
+            color: var(--danger);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .alert-content p {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            10% { transform: rotate(15deg); }
+            20% { transform: rotate(-15deg); }
+            30% { transform: rotate(15deg); }
+            40% { transform: rotate(-15deg); }
+            50% { transform: rotate(0deg); }
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1400px) {
+            .sidebar { width: 240px; }
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+            .premium-row { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 980px) {
+            .sidebar { width: 200px; }
+            .header { flex-direction: column; gap: 15px; text-align: center; }
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; padding: 20px; }
+            .metrics-grid { grid-template-columns: 1fr; }
+            .content { padding: 20px; }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="logo">🧅 Onion AI</div>
+        <div class="subtitle">Smart Storage Monitor</div>
+
+        <div class="nav-menu">
+            <div class="nav-item active" data-section="dashboard">📊 Dashboard</div>
+            <div class="nav-item" data-section="analytics">📈 Analytics</div>
+            <div class="nav-item" data-section="alerts">🔔 Alerts</div>
+            <div class="nav-item" data-section="settings">⚙️ Settings</div>
+            <div class="nav-item" data-section="reports">📋 Reports</div>
+            <div class="nav-item" data-section="insights">🤖 AI Insights</div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="header-left">
+                <h1>Storage Health Monitor</h1>
+                <p id="dateTime">Loading...</p>
+            </div>
+            <div class="clock" id="clock">--:--:--</div>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="content">
+            <!-- ALERT BANNER -->
+            <div class="alert-banner" id="alertBanner" style="display:none;">
+                <div class="alert-icon">⚠️</div>
+                <div class="alert-content">
+                    <h3 id="alertTitle">Alert Detected</h3>
+                    <p id="alertMessage">Monitor conditions closely</p>
+                </div>
+            </div>
+
+            <!-- METRICS GRID -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Temperature</div>
+                    <div class="metric-value" id="tempValue">{{ temp }}°C</div>
+                    <div class="metric-bar">
+                        <div class="metric-bar-fill" id="tempBar" style="width: 45%"></div>
+                    </div>
+                    <div class="metric-status">
+                        <div class="status-dot safe"></div>
+                        <span>Optimal</span>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">Humidity Level</div>
+                    <div class="metric-value" id="humidityValue">{{ humidity }}%</div>
+                    <div class="metric-bar">
+                        <div class="metric-bar-fill" id="humidityBar" style="width: 65%"></div>
+                    </div>
+                    <div class="metric-status">
+                        <div class="status-dot safe"></div>
+                        <span>Stable</span>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">Gas Detection</div>
+                    <div class="metric-value" id="gasValue">{{ gas }}</div>
+                    <div class="metric-bar">
+                        <div class="metric-bar-fill" id="gasBar" style="width: 35%"></div>
+                    </div>
+                    <div class="metric-status">
+                        <div class="status-dot safe"></div>
+                        <span>Safe</span>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-label">Shelf Life</div>
+                    <div class="metric-value" id="shelfValue">{{ shelf }} days</div>
+                    <div class="metric-bar">
+                        <div class="metric-bar-fill" id="shelfBar" style="width: 72%"></div>
+                    </div>
+                    <div class="metric-status">
+                        <div class="status-dot safe"></div>
+                        <span>Fresh</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PREMIUM ROW -->
+            <div class="premium-row">
+                <div class="premium-card">
+                    <h2 style="margin-bottom: 20px; font-size: 18px;">📊 Real-Time Trend</h2>
+                    <div class="chart-container">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="premium-card">
+                    <h2 style="margin-bottom: 20px; font-size: 18px;">🎯 Status Overview</h2>
+                    <div class="status-box">
+                        <div class="status-item">
+                            <div class="status-item-label">OVERALL CONDITION</div>
+                            <div class="status-item-value" id="overallStatus">98%</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-item-label">SPOILAGE RISK</div>
+                            <div class="status-item-value" id="spoilageRisk" style="color: var(--success);">2%</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-item-label">SYSTEM STATUS</div>
+                            <div class="status-item-value" style="color: var(--success);">🟢 ACTIVE</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // UPDATE CLOCK
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').textContent = now.toLocaleTimeString('en-US', { hour12: false });
+            document.getElementById('dateTime').textContent = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        // CHART
+        let chartInstance = null;
+        function initChart() {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'],
+                    datasets: [
+                        {
+                            label: 'Temperature (°C)',
+                            data: [18, 19, 18, 20, 19, 21, 20],
+                            borderColor: '#00d9ff',
+                            backgroundColor: 'rgba(0, 217, 255, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 5,
+                            pointBackgroundColor: '#00d9ff',
+                            pointBorderColor: '#000',
+                            pointBorderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: { color: '#b0b9d4', borderSkip: 100 }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            grid: { color: 'rgba(0, 217, 255, 0.1)' },
+                            ticks: { color: '#b0b9d4' }
+                        },
+                        x: {
+                            grid: { color: 'rgba(0, 217, 255, 0.1)' },
+                            ticks: { color: '#b0b9d4' }
+                        }
+                    }
+                }
+            });
+        }
+        initChart();
+
+        // LIVE DATA
+        function updateDashboard() {
+            fetch('/live')
+                .then(res => res.json())
+                .then(data => {
+                    // Update values
+                    document.getElementById('tempValue').textContent = data.temp + '°C';
+                    document.getElementById('humidityValue').textContent = data.humidity + '%';
+                    document.getElementById('gasValue').textContent = data.gas;
+                    document.getElementById('shelfValue').textContent = data.shelf + ' days';
+
+                    // Update bars
+                    document.getElementById('tempBar').style.width = Math.min(100, (data.temp / 25) * 100) + '%';
+                    document.getElementById('humidityBar').style.width = data.humidity + '%';
+                    document.getElementById('gasBar').style.width = Math.min(100, (data.gas / 500) * 100) + '%';
+                    document.getElementById('shelfBar').style.width = Math.min(100, (data.shelf / 120) * 100) + '%';
+
+                    // Update status
+                    document.getElementById('overallStatus').textContent = (100 - data.status * 50) + '%';
+                    document.getElementById('spoilageRisk').textContent = (data.status * 50) + '%';
+
+                    // Alert logic
+                    const alertBanner = document.getElementById('alertBanner');
+                    if (data.status > 0) {
+                        alertBanner.style.display = 'flex';
+                        document.getElementById('alertTitle').textContent = data.alert;
+                        document.getElementById('alertMessage').textContent = new Date().toLocaleTimeString();
+                    } else {
+                        alertBanner.style.display = 'none';
+                    }
+                });
+        }
+        updateDashboard();
+        setInterval(updateDashboard, 2000);
+
+        // ===== SIDEBAR NAVIGATION =====
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                // Remove active class from all items
+                document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+                
+                // Add active class to clicked item
+                this.classList.add('active');
+                
+                const section = this.getAttribute('data-section');
+                
+                // Show appropriate message/content
+                const header = document.querySelector('.header-left h1');
+                const content = document.querySelector('.content');
+                
+                // Fade out animation
+                content.style.opacity = '0.5';
+                
+                const sections = {
+                    'dashboard': {
+                        title: 'Storage Health Monitor',
+                        message: 'Real-time monitoring dashboard'
+                    },
+                    'analytics': {
+                        title: 'Analytics Dashboard',
+                        message: 'View detailed analytics and trends'
+                    },
+                    'alerts': {
+                        title: 'Alert Center',
+                        message: 'Monitor active and past alerts'
+                    },
+                    'settings': {
+                        title: 'System Settings',
+                        message: 'Configure monitoring parameters'
+                    },
+                    'reports': {
+                        title: 'Reports & History',
+                        message: 'Generate and view historical reports'
+                    },
+                    'insights': {
+                        title: 'AI Insights',
+                        message: 'Predictive analytics and recommendations'
+                    }
+                };
+                
+                setTimeout(() => {
+                    header.textContent = sections[section].title;
+                    document.querySelector('.header-left p').textContent = sections[section].message;
+                    content.style.opacity = '1';
+                }, 300);
+            });
+        });
+    </script>
+</body>
+</html>
+    <h2 id="shelfLife">120</h2>
+  </div>
+
+  <!-- CHART -->
+  <div class="chart">
+    <h3>Live Data Graph</h3>
+    <canvas id="chart"></canvas>
+  </div>
+
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>
